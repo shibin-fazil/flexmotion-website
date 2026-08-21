@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlexMotion — Stop Paying Skilled Staff to Walk Hallways</title>
+<meta name="description" content="Autonomous mobile robots for point-to-point delivery across hotels and healthcare facilities. 98% task completion, 40% labour reduction, 5-6 month payback.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   FlexMotion — Design tokens
+   ========================================================= */
+:root {
+  /* Color — clean, light, professional */
+  --bg:        #ffffff;
+  --bg-alt:    #f6f7f9;
+  --panel:     #ffffff;
+  --panel-2:   #f1f3f5;
+  --line:      #e2e5e9;
+  --line-soft: #ebedf0;
+  --text:      #14181f;
+  --text-muted:#586170;
+  --text-dim:  #8891a0;
+  --amber:     #d95b2b;   /* task / CTA / assigned */
+  --amber-dim: #b6491f;
+  --teal:      #0a7368;   /* route / navigation / precision */
+  --teal-dim:  #085c53;
+  --white:     #ffffff;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(20, 24, 31, 0.05);
+  --shadow-md: 0 4px 16px rgba(20, 24, 31, 0.06);
+  --shadow-lg: 0 12px 32px rgba(20, 24, 31, 0.08);
+
+  /* Type */
+  --f-display: 'Space Grotesk', 'Arial Narrow', sans-serif;
+  --f-body:    'Inter', -apple-system, sans-serif;
+  --f-mono:    'IBM Plex Mono', 'Courier New', monospace;
+
+  --radius: 6px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+ul { list-style: none; }
+
+h1, h2, h3, h4 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.mono {
+  font-family: var(--f-mono);
+  letter-spacing: 0.02em;
+}
+
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.eyebrow::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: var(--teal);
+}
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* Focus visibility */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   Header / Nav
+   ========================================================= */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 76px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 19px;
+  color: var(--text);
+}
+
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.logo-mark circle.pulse {
+  animation: pulse 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.nav-links {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.nav-links a {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+  position: relative;
+  padding: 4px 0;
+}
+
+.nav-links a:hover,
+.nav-links a[aria-current="page"] {
+  color: var(--text);
+}
+
+.nav-links a[aria-current="page"]::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -4px;
+  height: 2px;
+  background: var(--amber);
+}
+
+.nav-cta {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #ffffff !important;
+  background: var(--teal);
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.nav-cta:hover { background: var(--teal-dim); transform: translateY(-1px); }
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: var(--radius);
+}
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--f-mono);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 26px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--amber);
+  color: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover { background: var(--amber-dim); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+.btn-outline {
+  border-color: var(--line);
+  color: var(--text);
+  background: transparent;
+}
+.btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+/* =========================================================
+   Hero (route-line signature)
+   ========================================================= */
+.hero {
+  position: relative;
+  padding: 90px 0 70px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--bg-alt);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 50px;
+  align-items: center;
+}
+
+.hero h1 {
+  font-size: clamp(38px, 5vw, 58px);
+  margin-bottom: 22px;
+}
+.hero h1 .accent { color: var(--amber); }
+
+.hero-sub {
+  font-size: 18px;
+  color: var(--text-muted);
+  max-width: 46ch;
+  margin-bottom: 34px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 36px;
+  flex-wrap: wrap;
+}
+
+.stat .num {
+  font-family: var(--f-mono);
+  font-size: 26px;
+  color: var(--teal);
+  font-weight: 600;
+}
+.stat .label {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+}
+
+/* Route diagram graphic */
+.route-diagram {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 28px 24px 24px;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+.route-diagram .rd-label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 18px;
+}
+
+.route-svg { width: 100%; height: auto; display: block; }
+
+.route-node-label {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  fill: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* =========================================================
+   Section rhythm
+   ========================================================= */
+.section { padding: 88px 0; border-bottom: 1px solid var(--line-soft); }
+.section:last-of-type { border-bottom: none; }
+.section-alt { background: var(--bg-alt); }
+
+.section-head {
+  max-width: 640px;
+  margin-bottom: 52px;
+}
+.section-head h2 { font-size: clamp(28px, 3.4vw, 38px); margin-bottom: 14px; }
+.section-head p { color: var(--text-muted); font-size: 17px; }
+
+/* Value prop / feature cards */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.value-card {
+  background: var(--panel);
+  padding: 30px 26px;
+  transition: background 0.25s ease;
+}
+.value-card:hover { background: var(--panel-2); }
+.card-grid { box-shadow: var(--shadow-md); }
+
+.value-card .vc-id {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--amber);
+  margin-bottom: 16px;
+}
+
+.value-card h3 { font-size: 18px; margin-bottom: 10px; }
+.value-card p { color: var(--text-muted); font-size: 14.5px; }
+
+/* Sector cards */
+.sector-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.sector-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 34px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.sector-card:hover { border-color: var(--teal-dim); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.sector-card .sc-tag {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--teal);
+  border: 1px solid var(--teal-dim);
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.sector-card h3 { font-size: 24px; margin-bottom: 12px; }
+.sector-card p { color: var(--text-muted); margin-bottom: 22px; }
+
+.sector-route {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-soft);
+}
+.sector-route .node {
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+.sector-route .arrow { color: var(--amber); }
+
+/* Placeholder media blocks */
+.media-ph {
+  background: repeating-linear-gradient(135deg, var(--bg-alt), var(--bg-alt) 10px, var(--panel) 10px, var(--panel) 20px);
+  border: 1px dashed #c7ccd3;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-dim);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 20px;
+  min-height: 180px;
+}
+
+/* Stat strip */
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.stat-strip .ss-item {
+  padding: 28px 24px;
+  border-right: 1px solid var(--line);
+  background: var(--panel);
+}
+.stat-strip .ss-item:last-child { border-right: none; }
+.stat-strip .num { font-family: var(--f-mono); font-size: 30px; color: var(--amber); }
+.stat-strip .label { font-size: 12.5px; color: var(--text-muted); margin-top: 6px; }
+
+/* Platform / dashboard block (Motion Galaxy) */
+.platform-block {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  padding: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.fleet-map {
+  aspect-ratio: 4/3;
+  background: var(--bg-alt);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.platform-feature-list li {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.platform-feature-list li:last-child { border-bottom: none; }
+.platform-feature-list .pf-num {
+  font-family: var(--f-mono);
+  color: var(--teal);
+  font-size: 13px;
+  flex-shrink: 0;
+  width: 26px;
+}
+.platform-feature-list h4 { font-size: 15.5px; margin-bottom: 4px; }
+.platform-feature-list p { font-size: 13.5px; color: var(--text-muted); }
+
+/* Timeline (ROI) */
+.roi-strip {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.roi-step {
+  flex: 1;
+  padding: 26px 22px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  position: relative;
+}
+.roi-step:last-child { border-right: none; background: var(--panel-2); }
+.roi-step .rs-month { font-family: var(--f-mono); color: var(--teal); font-size: 12px; margin-bottom: 10px; }
+.roi-step p { font-size: 14px; color: var(--text-muted); }
+
+/* CTA band */
+.cta-band {
+  background: var(--text);
+  padding: 70px 0;
+  text-align: center;
+}
+.cta-band h2, .cta-band p { color: #ffffff; }
+.cta-band p { color: rgba(255,255,255,0.68); }
+.cta-band h2 { font-size: clamp(26px, 3vw, 36px); margin-bottom: 16px; }
+.cta-band p { color: var(--text-muted); margin-bottom: 32px; }
+.cta-band .hero-actions { justify-content: center; margin-bottom: 0; }
+.cta-band .btn-outline { border-color: rgba(255,255,255,0.3); color: #ffffff; }
+.cta-band .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+
+/* =========================================================
+   Page hero (interior pages, smaller)
+   ========================================================= */
+.page-hero {
+  padding: 64px 0 50px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.page-hero h1 { font-size: clamp(32px, 4.4vw, 46px); margin-bottom: 16px; }
+.page-hero p { color: var(--text-muted); font-size: 17px; max-width: 60ch; }
+
+/* Two column with media placeholder */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+.split.reverse .split-media { order: 2; }
+.split h2 { font-size: 30px; margin-bottom: 18px; }
+.split p { color: var(--text-muted); margin-bottom: 16px; }
+
+/* Capability list */
+.cap-list { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.cap-item {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+}
+.cap-item .ci-icon { flex-shrink: 0; width: 22px; height: 22px; color: var(--teal); margin-top: 2px; }
+.cap-item h4 { font-size: 15.5px; margin-bottom: 4px; }
+.cap-item p { font-size: 13.5px; color: var(--text-muted); }
+
+/* Founders placeholder grid */
+.founder-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.founder-card { text-align: left; }
+.founder-photo {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+.founder-card h4 { font-size: 16px; }
+.founder-card .role { font-family: var(--f-mono); font-size: 12px; color: var(--teal); margin-top: 2px; }
+
+/* Product detail cards (Products page) */
+.product-detail {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--panel);
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-md);
+}
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+}
+.product-detail-body { padding: 40px; }
+.product-detail-body .sc-tag { margin-bottom: 16px; }
+.product-detail-body h3 { font-size: 26px; margin-bottom: 14px; }
+.product-detail-body p { color: var(--text-muted); margin-bottom: 20px; }
+
+.spec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+.spec-item .num { font-family: var(--f-mono); color: var(--amber); font-size: 20px; }
+.spec-item .label { font-size: 11.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+
+/* Contact page */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+}
+
+.form-group { margin-bottom: 22px; }
+.form-group label {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 13px 14px;
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 14.5px;
+  transition: border-color 0.2s ease;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--teal);
+  outline: none;
+}
+.form-group textarea { resize: vertical; min-height: 120px; }
+
+.contact-info-item {
+  display: flex;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.contact-info-item:first-child { padding-top: 0; }
+.contact-info-item .ci-icon { color: var(--teal); flex-shrink: 0; width: 22px; height: 22px; margin-top: 2px; }
+.contact-info-item h4 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; font-family: var(--f-mono); color: var(--text-dim); margin-bottom: 6px; }
+.contact-info-item p, .contact-info-item a { font-size: 15.5px; }
+
+.social-row { display: flex; gap: 12px; margin-top: 28px; }
+.social-row a {
+  width: 38px; height: 38px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+.social-row a:hover { border-color: var(--teal); color: var(--teal); }
+
+.note-box {
+  background: var(--panel);
+  border: 1px solid var(--line-soft);
+  border-left: 3px solid var(--amber);
+  padding: 14px 18px;
+  border-radius: 4px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin-top: 24px;
+}
+
+/* =========================================================
+   Footer
+   ========================================================= */
+.site-footer {
+  background: var(--bg-alt);
+  padding: 56px 0 28px;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+.footer-brand p { color: var(--text-muted); font-size: 14px; margin-top: 14px; max-width: 34ch; }
+.footer-col h5 {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+.footer-col li { margin-bottom: 10px; }
+.footer-col a { color: var(--text-muted); font-size: 14px; transition: color 0.2s ease; }
+.footer-col a:hover { color: var(--teal); }
+
+.footer-bottom {
+  border-top: 1px solid var(--line-soft);
+  padding-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  font-family: var(--f-mono);
+}
+
+/* =========================================================
+   Scroll reveal
+   ========================================================= */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+.reveal-stagger.is-visible > * { opacity: 1; transform: translateY(0); }
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-stagger.is-visible > *:nth-child(1) { transition-delay: 0.02s; }
+.reveal-stagger.is-visible > *:nth-child(2) { transition-delay: 0.09s; }
+.reveal-stagger.is-visible > *:nth-child(3) { transition-delay: 0.16s; }
+.reveal-stagger.is-visible > *:nth-child(4) { transition-delay: 0.23s; }
+.reveal-stagger.is-visible > *:nth-child(5) { transition-delay: 0.30s; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-stagger > * { opacity: 1; transform: none; transition: none; }
+}
+
+/* =========================================================
+   Stat boxes (hero metrics)
+   ========================================================= */
+.stat-box-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin-top: 44px;
+}
+.stat-box {
+  background: var(--panel);
+  padding: 24px 20px;
+  text-align: left;
+}
+.stat-box .num {
+  font-family: var(--f-mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--amber);
+  line-height: 1;
+}
+.stat-box .label {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   Problem section
+   ========================================================= */
+.problem-block {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 60px;
+  align-items: start;
+}
+.problem-stat {
+  font-family: var(--f-display);
+  font-size: clamp(64px, 9vw, 108px);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 0.9;
+  position: relative;
+}
+.problem-stat span { color: var(--amber); }
+.problem-stat-label {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 14px;
+}
+.problem-copy p { font-size: 17px; color: var(--text-muted); margin-bottom: 18px; }
+.problem-copy p:last-child { margin-bottom: 0; }
+.problem-copy strong { color: var(--text); font-weight: 600; }
+
+/* =========================================================
+   Feature grid (5-up hardware showcase)
+   ========================================================= */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.feature-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 30px 26px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.feature-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--teal-dim); }
+.feature-card .fc-icon {
+  width: 42px; height: 42px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--teal);
+  margin-bottom: 18px;
+}
+.feature-card h3 { font-size: 17px; margin-bottom: 10px; }
+.feature-card p { font-size: 14px; color: var(--text-muted); }
+.feature-grid .feature-card:nth-child(4),
+.feature-grid .feature-card:nth-child(5) { grid-column: span 1; }
+@media (min-width: 901px) {
+  .feature-grid { grid-template-columns: repeat(6, 1fr); }
+  .feature-grid .feature-card:nth-child(1) { grid-column: span 2; }
+  .feature-grid .feature-card:nth-child(2) { grid-column: span 2; }
+  .feature-grid .feature-card:nth-child(3) { grid-column: span 2; }
+  .feature-grid .feature-card:nth-child(4) { grid-column: span 3; }
+  .feature-grid .feature-card:nth-child(5) { grid-column: span 3; }
+}
+
+/* =========================================================
+   Command Center (Motion Galaxy)
+   ========================================================= */
+.command-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+.command-list li {
+  display: flex;
+  gap: 18px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.command-list li:first-child { padding-top: 0; }
+.command-list li:last-child { border-bottom: none; padding-bottom: 0; }
+.command-list .cl-icon {
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--teal);
+  flex-shrink: 0;
+}
+.command-list h4 { font-size: 16px; margin-bottom: 5px; }
+.command-list p { font-size: 14px; color: var(--text-muted); }
+
+.dashboard-mock {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.dashboard-mock .dm-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--panel-2);
+}
+.dashboard-mock .dm-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+.dashboard-mock .dm-title { font-family: var(--f-mono); font-size: 11.5px; color: var(--text-dim); margin-left: 6px; }
+.dashboard-mock .dm-body { padding: 22px; }
+
+/* =========================================================
+   Vertical tabs (Hospitality / Healthcare)
+   ========================================================= */
+.tabs-nav {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 36px;
+}
+.tab-btn {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 11px 22px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tab-btn.active { background: var(--panel); color: var(--text); box-shadow: var(--shadow-sm); }
+.tab-btn:hover:not(.active) { color: var(--text); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeUp 0.5s ease both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.tab-panel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  align-items: center;
+}
+.tab-panel h3 { font-size: 30px; margin-bottom: 22px; }
+
+.usecase-list li {
+  display: flex;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.usecase-list li:first-child { padding-top: 0; }
+.usecase-list li:last-child { border-bottom: none; }
+.usecase-list .uc-num {
+  font-family: var(--f-mono);
+  color: var(--amber);
+  font-size: 13px;
+  flex-shrink: 0;
+  width: 22px;
+  padding-top: 2px;
+}
+.usecase-list h4 { font-size: 15.5px; margin-bottom: 4px; }
+.usecase-list p { font-size: 14px; color: var(--text-muted); }
+
+/* =========================================================
+   RaaS value grid
+   ========================================================= */
+.raas-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.raas-card {
+  background: var(--panel);
+  padding: 30px 24px;
+}
+.raas-card .rc-icon { color: var(--teal); margin-bottom: 16px; }
+.raas-card h4 { font-size: 15.5px; margin-bottom: 8px; }
+.raas-card p { font-size: 13.5px; color: var(--text-muted); }
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+@media (max-width: 900px) {
+  .hero-grid, .split, .contact-grid, .platform-block { grid-template-columns: 1fr; }
+  .split .split-media { order: -1 !important; }
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+  .sector-grid, .cap-list, .founder-grid { grid-template-columns: 1fr; }
+  .stat-strip { grid-template-columns: repeat(2, 1fr); }
+  .roi-strip { flex-direction: column; }
+  .roi-step { border-right: none; border-bottom: 1px solid var(--line); }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .product-detail-grid { grid-template-columns: 1fr; }
+  .stat-box-grid { grid-template-columns: repeat(2, 1fr); }
+  .problem-block { grid-template-columns: 1fr; gap: 30px; }
+  .feature-grid { grid-template-columns: 1fr 1fr; }
+  .command-grid { grid-template-columns: 1fr; }
+  .command-grid .split-media { order: -1; }
+  .tab-panel-grid { grid-template-columns: 1fr; }
+  .raas-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .nav-links { position: fixed; top: 76px; left: 0; right: 0; bottom: 0; background: var(--bg); flex-direction: column; padding: 30px; gap: 26px; transform: translateX(100%); transition: transform 0.3s ease; }
+  .nav-links.open { transform: translateX(0); }
+  .nav-toggle { display: block; }
+  .nav-cta { margin-top: 10px; }
+  .card-grid, .footer-grid, .spec-grid { grid-template-columns: 1fr; }
+  .hero { padding: 56px 0 40px; }
+  .section { padding: 60px 0; }
+  .stat-box-grid { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .raas-grid { grid-template-columns: 1fr; }
+  .tabs-nav { display: flex; width: 100%; }
+  .tab-btn { flex: 1; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container nav">
+    <a href="index.html" class="logo">
+      <svg class="logo-mark" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="26" height="26" rx="6" stroke="#0a7368" stroke-width="1.5"/>
+        <path d="M6 14 H14 L18 9" stroke="#6b7480" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M14 14 L18 19" stroke="#6b7480" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle class="pulse" cx="21" cy="9" r="2.2" fill="#d95b2b"/>
+      </svg>
+      FlexMotion
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="about.html">About</a>
+      <a href="products.html">Products</a>
+      <a href="contact.html">Contact</a>
+      <a href="contact.html" class="nav-cta">Request a Demo</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 5h16M2 10h16M2 15h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- SECTION 1 — HERO -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <div class="eyebrow">Indoor Delivery Robots</div>
+        <h1>Stop Paying Skilled Staff to <span class="accent">Walk Hallways.</span></h1>
+        <p class="hero-sub">Autonomous mobile robots handle point-to-point delivery across hotels and healthcare facilities — increasing efficiency and reducing labour cost.</p>
+        <div class="hero-actions">
+          <a href="contact.html" class="btn btn-primary">Request a Demo</a>
+          <a href="products.html" class="btn btn-outline">See the Robots</a>
+        </div>
+      </div>
+
+      <div class="route-diagram reveal">
+        <div class="rd-label">Live route · Kitchen → Room 214</div>
+        <svg class="route-svg" viewBox="0 0 420 300" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="10" width="400" height="280" rx="4" fill="none" stroke="#d7dbe0" stroke-width="1"/>
+          <line x1="10" y1="110" x2="180" y2="110" stroke="#eef0f2" stroke-width="1"/>
+          <line x1="180" y1="10" x2="180" y2="290" stroke="#eef0f2" stroke-width="1"/>
+          <line x1="180" y1="200" x2="410" y2="200" stroke="#eef0f2" stroke-width="1"/>
+          <path class="route-path" d="M60 60 L60 150 L220 150 L220 250 L360 250" fill="none" stroke="#0a7368" stroke-width="2" stroke-dasharray="5 6" opacity="0.85"/>
+          <circle cx="60" cy="60" r="5" fill="#d95b2b"/>
+          <circle cx="360" cy="250" r="5" fill="#0a7368"/>
+          <circle class="route-dot" cx="60" cy="60" r="4.5" fill="#14181f" stroke="#ffffff" stroke-width="1.5"/>
+          <text class="route-node-label" x="70" y="55">Kitchen</text>
+          <text class="route-node-label" x="30" y="130">Corridor A</text>
+          <text class="route-node-label" x="228" y="145">Elevator</text>
+          <text class="route-node-label" x="228" y="230">Corridor C</text>
+          <text class="route-node-label" x="326" y="242">Room 214</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="stat-box-grid reveal-stagger">
+        <div class="stat-box">
+          <div class="num" data-count-to="40" data-count-suffix="%">0%</div>
+          <div class="label">Reduction in manual labour work</div>
+        </div>
+        <div class="stat-box">
+          <div class="num" data-count-to="98" data-count-suffix="%">0%</div>
+          <div class="label">Task completion rate</div>
+        </div>
+        <div class="stat-box">
+          <div class="num mono">24/7</div>
+          <div class="label">Auto-docking &amp; fleet dispatch</div>
+        </div>
+        <div class="stat-box">
+          <div class="num mono">5–6 mo</div>
+          <div class="label">Payback period</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2 — THE HIDDEN LABOR TAX -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="problem-block reveal">
+        <div>
+          <div class="eyebrow">The Challenge</div>
+          <div class="problem-stat"><span>35%</span></div>
+          <div class="problem-stat-label">of every shift lost to walking</div>
+        </div>
+        <div class="problem-copy">
+          <h2 style="font-size:30px; margin-bottom:18px;">Your staff spends 35% of every shift just carrying things.</h2>
+          <p>In hotels and healthcare facilities, front-desk managers, servers, and nursing staff lose hours every shift walking back and forth between kitchens, supply closets, pharmacies, and guest rooms.</p>
+          <p>When skilled personnel become hallway couriers, response times lag, operational costs rise, and staff burn out. <strong>FlexMotion solves the transit bottleneck</strong> so your team can focus on what actually drives revenue: human care and guest experience.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3 — HARDWARE SHOWCASE -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Dual-Mode Intelligence</div>
+        <h2>Engineered for tight corridors, built for continuous uptime.</h2>
+      </div>
+      <div class="feature-grid reveal-stagger">
+        <div class="feature-card">
+          <div class="fc-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="11" r="2.5" fill="currentColor"/></svg></div>
+          <h3>Point-to-Point Autonomous Navigation</h3>
+          <p>Advanced LiDAR and vision sensors navigate dynamic, crowded indoor environments. No blockages — AI-optimised shortest and fastest path planning.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="4" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 18h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <h3>Advanced Fleet Management</h3>
+          <p>Control and monitor every robot from one single platform — Motion Galaxy — with API integration to your booking and administration tools.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3v4M11 15v4M3 11h4M15 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="11" r="3" stroke="currentColor" stroke-width="1.5"/></svg></div>
+          <h3>Continuous Duty &amp; Dual Charging</h3>
+          <p>Intelligent self-docking returns the AMR to base when idle or low on power, plus rapid manual charge ports for uninterrupted peak-hour shifts.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="4" y="7" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5"/></svg></div>
+          <h3>Contactless, Secure Delivery</h3>
+          <p>Protected storage bays safeguard food temperature, sensitive amenities, and medical supplies during transit.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M6 19V5l5 3 5-3v14" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+          <h3>Multi-Floor Delivery</h3>
+          <p>Seamless lift integration for autonomous delivery across different floors of your facility.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4 — MOTION GALAXY COMMAND CENTER -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Enterprise Fleet Management</div>
+        <h2>One central dashboard. Total fleet visibility.</h2>
+      </div>
+      <div class="command-grid">
+        <ul class="command-list reveal-stagger">
+          <li>
+            <div class="cl-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9h5l2-5 2 8 2-3h1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div>
+              <h4>Dynamic Task Allocation</h4>
+              <p>Assign service area, kitchen, reception, or nurse-station runs with a single click.</p>
+            </div>
+          </li>
+          <li>
+            <div class="cl-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.4"/><path d="M9 5.5v4l2.5 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+            <div>
+              <h4>Live Telemetry &amp; Heatmaps</h4>
+              <p>Track live bot coordinates, delivery timelines, and battery states across your entire facility.</p>
+            </div>
+          </li>
+          <li>
+            <div class="cl-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="2" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M6 6h6M6 9h6M6 12h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+            <div>
+              <h4>Floor &amp; Elevator Integration</h4>
+              <p>Multi-floor traversal with autonomous route planning that prevents hallway bottlenecks.</p>
+            </div>
+          </li>
+          <li>
+            <div class="cl-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 15V9M8 15V4M13 15v-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+            <div>
+              <h4>Actionable Analytics</h4>
+              <p>Export detailed performance audits, delivery speed averages, and cost-savings reports directly to management.</p>
+            </div>
+          </li>
+        </ul>
+
+        <div class="dashboard-mock reveal">
+          <div class="dm-topbar">
+            <span class="dm-dot"></span><span class="dm-dot"></span><span class="dm-dot"></span>
+            <span class="dm-title">MOTION GALAXY — FLEET OVERVIEW</span>
+          </div>
+          <div class="dm-body">
+            <svg width="100%" height="260" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+              <rect width="400" height="260" fill="#f4f5f7" rx="6"/>
+              <g stroke="#e2e5e9" stroke-width="1">
+                <line x1="0" y1="55" x2="400" y2="55"/>
+                <line x1="0" y1="135" x2="400" y2="135"/>
+                <line x1="0" y1="205" x2="400" y2="205"/>
+                <line x1="95" y1="0" x2="95" y2="260"/>
+                <line x1="215" y1="0" x2="215" y2="260"/>
+                <line x1="310" y1="0" x2="310" y2="260"/>
+              </g>
+              <circle cx="65" cy="95" r="6" fill="#0a7368"/>
+              <circle cx="160" cy="55" r="6" fill="#d95b2b"/>
+              <circle cx="260" cy="175" r="6" fill="#0a7368"/>
+              <circle cx="340" cy="85" r="6" fill="#0a7368"/>
+              <circle cx="140" cy="230" r="6" fill="#d95b2b"/>
+              <text x="76" y="99" fill="#586170" font-family="IBM Plex Mono" font-size="10">BOT-01</text>
+              <text x="171" y="59" fill="#586170" font-family="IBM Plex Mono" font-size="10">BOT-02 · task</text>
+              <text x="271" y="179" fill="#586170" font-family="IBM Plex Mono" font-size="10">BOT-03</text>
+              <text x="351" y="89" fill="#586170" font-family="IBM Plex Mono" font-size="10">BOT-04</text>
+              <text x="151" y="234" fill="#586170" font-family="IBM Plex Mono" font-size="10">BOT-05 · task</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 — VERTICALS TABS -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Built for High-Stakes Verticals</div>
+        <h2>Where FlexMotion runs, every day.</h2>
+      </div>
+
+      <div class="tabs-wrap reveal">
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="hospitality">Hospitality &amp; Hotels</button>
+          <button class="tab-btn" data-tab="healthcare">Healthcare &amp; Clinical</button>
+        </div>
+
+        <div class="tab-panel active" data-panel="hospitality">
+          <div class="tab-panel-grid">
+            <div>
+              <h3>Elevate Guest Delight Without Overstaffing.</h3>
+              <ul class="usecase-list">
+                <li>
+                  <span class="uc-num mono">01</span>
+                  <div><h4>Late-Night Room Service</h4><p>24/7 automated delivery of meals, linens, and toiletries.</p></div>
+                </li>
+                <li>
+                  <span class="uc-num mono">02</span>
+                  <div><h4>Lobby Concierge &amp; Guide</h4><p>Greet guests, answer FAQs, and guide visitors to event halls or elevators.</p></div>
+                </li>
+                <li>
+                  <span class="uc-num mono">03</span>
+                  <div><h4>Staff Multiplier</h4><p>Free your front desk to handle check-ins while the robot handles the runs.</p></div>
+                </li>
+              </ul>
+            </div>
+            <div class="media-ph" style="min-height:320px;">Hospitality deployment photo / video — to be added</div>
+          </div>
+        </div>
+
+        <div class="tab-panel" data-panel="healthcare">
+          <div class="tab-panel-grid">
+            <div>
+              <h3>Let Nurses Nurse. Let FlexMotion Run.</h3>
+              <ul class="usecase-list">
+                <li>
+                  <span class="uc-num mono">01</span>
+                  <div><h4>Pharmacy &amp; Lab Transit</h4><p>Secure, rapid transfer of test samples, prescription medications, and IV bags.</p></div>
+                </li>
+                <li>
+                  <span class="uc-num mono">02</span>
+                  <div><h4>Sterile Supply Replenishment</h4><p>Continuous station-to-room replenishment without clinical interruption.</p></div>
+                </li>
+                <li>
+                  <span class="uc-num mono">03</span>
+                  <div><h4>Sanitary &amp; Contactless</h4><p>Reduces human touchpoints and minimizes corridor foot traffic in sensitive wings.</p></div>
+                </li>
+              </ul>
+            </div>
+            <div class="media-ph" style="min-height:320px;">Healthcare deployment photo / video — to be added</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RAAS -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="eyebrow">Deployment Model</div>
+        <h2>Enterprise robotics without the capital expenditure.</h2>
+        <p>Our Robotics-as-a-Service (RaaS) framework lets you deploy on day one with minimal startup cost.</p>
+      </div>
+      <div class="raas-grid reveal-stagger">
+        <div class="raas-card">
+          <div class="rc-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 20l4-9 4 9M6.5 14h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 20V6h3.5a3.5 3.5 0 010 7H14" stroke="currentColor" stroke-width="1.5"/></svg></div>
+          <h4>Low Initial Investment</h4>
+          <p>Zero prohibitive hardware acquisition debt.</p>
+        </div>
+        <div class="raas-card">
+          <div class="rc-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.5"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <h4>5–6 Month Breakeven</h4>
+          <p>Realize positive operational cash flow before your first year is up.</p>
+        </div>
+        <div class="raas-card">
+          <div class="rc-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 17l5-6 4 4 8-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h4>60% Efficiency Gain</h4>
+          <p>Reallocate up to 1,200+ manual courier hours back to core operations annually per unit.</p>
+        </div>
+        <div class="raas-card">
+          <div class="rc-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.5"/></svg></div>
+          <h4>Full Lifecycle Support</h4>
+          <p>Automated software updates, Motion Galaxy cloud access, and preventive maintenance included.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-band">
+    <div class="container">
+      <h2>See FlexMotion navigate your facility.</h2>
+      <p>Book a walkthrough and we'll map a route for your kitchen, ward, or reception floor.</p>
+      <div class="hero-actions">
+        <a href="contact.html" class="btn btn-primary">Request a Demo</a>
+        <a href="about.html" class="btn btn-outline">About FlexMotion</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <svg class="logo-mark" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="26" height="26" rx="6" stroke="#0a7368" stroke-width="1.5"/>
+            <path d="M6 14 H14 L18 9" stroke="#6b7480" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M14 14 L18 19" stroke="#6b7480" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <circle cx="21" cy="9" r="2.2" fill="#d95b2b"/>
+          </svg>
+          FlexMotion
+        </a>
+        <p>Autonomous mobile robots for indoor delivery and service, built for hospitality and healthcare facilities.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Site</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="products.html">Products</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Sectors</h5>
+        <ul>
+          <li><a href="products.html">Hospitality</a></li>
+          <li><a href="products.html">Healthcare</a></li>
+          <li><a href="products.html">Motion Galaxy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="contact.html">Request a Demo</a></li>
+          <li><a href="mailto:hello@flexmotion.example">hello@flexmotion.example</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 FlexMotion. All rights reserved.</span>
+      <span>Placeholder content — logo, photos, and team details to be added.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Mobile nav toggle
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.querySelector('.nav-toggle');
+  const links = document.querySelector('.nav-links');
+  if (toggle && links) {
+    toggle.addEventListener('click', () => {
+      const isOpen = links.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    links.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => links.classList.remove('open'));
+    });
+  }
+
+  // Scroll-reveal for elements with .reveal / .reveal-stagger
+  const revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
+  if ('IntersectionObserver' in window && revealEls.length) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(el => io.observe(el));
+  } else {
+    revealEls.forEach(el => el.classList.add('is-visible'));
+  }
+
+  // Animated count-up for elements with data-count-to
+  const countEls = document.querySelectorAll('[data-count-to]');
+  if ('IntersectionObserver' in window && countEls.length) {
+    const countIo = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = parseFloat(el.dataset.countTo);
+        const suffix = el.dataset.countSuffix || '';
+        const duration = 1400;
+        const start = performance.now();
+        function tick(now) {
+          const p = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          const val = target * eased;
+          el.textContent = (Number.isInteger(target) ? Math.round(val) : val.toFixed(1)) + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          requestAnimationFrame(tick);
+        } else {
+          el.textContent = target + suffix;
+        }
+        countIo.unobserve(el);
+      });
+    }, { threshold: 0.4 });
+    countEls.forEach(el => countIo.observe(el));
+  }
+
+  // Vertical tabs (Hospitality / Healthcare)
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  if (tabBtns.length) {
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const group = btn.closest('.tabs-wrap');
+        const target = btn.dataset.tab;
+        group.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+        group.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === target));
+      });
+    });
+  }
+
+  // Animate any route dots along their path
+  document.querySelectorAll('.route-dot').forEach(dot => {
+    const path = dot.closest('svg').querySelector('.route-path');
+    if (!path) return;
+    const len = path.getTotalLength();
+    dot.style.offsetPath = 'none';
+    let start = null;
+    const duration = 4200;
+    function frame(ts) {
+      if (!start) start = ts;
+      const t = ((ts - start) % duration) / duration;
+      const point = path.getPointAtLength(t * len);
+      dot.setAttribute('cx', point.x);
+      dot.setAttribute('cy', point.y);
+      requestAnimationFrame(frame);
+    }
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      requestAnimationFrame(frame);
+    }
+  });
+});
+
+</script>
+</body>
+</html>
